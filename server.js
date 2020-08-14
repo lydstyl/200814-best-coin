@@ -3,9 +3,10 @@ const CoinGecko = require('coingecko-api')
 
 const options = {
   exchange: 'binance',
-  date1: '10-08-2019',
+  date1: '10-07-2020',
   date2: '10-08-2020',
-  sortBy: 'evoBtc', // or 'evoUsd'
+  isEvoBtc: true, // or 'evoUsd' if false
+  isWinner: true, // looser if false
 }
 
 //2. Initiate the CoinGecko API Client
@@ -28,8 +29,8 @@ const compareMarketCapFrom2Dates = async (coin, date1, date2) => {
 
   try {
     coinEvo[date1] = {
-      btc: data.data.market_data.market_cap.btc,
-      usd: data.data.market_data.market_cap.usd,
+      btc: data.data.market_data ? data.data.market_data.market_cap.btc : null,
+      usd: data.data.market_data ? data.data.market_data.market_cap.usd : null,
     }
 
     data = await CoinGeckoClient.coins.fetchHistory(coin, {
@@ -37,13 +38,17 @@ const compareMarketCapFrom2Dates = async (coin, date1, date2) => {
     })
 
     coinEvo[date2] = {
-      btc: data.data.market_data.market_cap.btc,
-      usd: data.data.market_data.market_cap.usd,
+      btc: data.data.market_data ? data.data.market_data.market_cap.btc : null,
+      usd: data.data.market_data ? data.data.market_data.market_cap.usd : null,
     }
 
-    coinEvo.marketEvoInBtc = coinEvo[date2].btc / coinEvo[date1].btc
+    coinEvo.marketEvoInBtc = coinEvo[date1].btc
+      ? coinEvo[date2].btc / coinEvo[date1].btc
+      : 0
 
-    coinEvo.marketEvoInUsd = coinEvo[date2].usd / coinEvo[date1].usd
+    coinEvo.marketEvoInUsd = coinEvo[date1].usd
+      ? coinEvo[date2].usd / coinEvo[date1].usd
+      : 0
 
     return coinEvo
   } catch (error) {
@@ -58,12 +63,11 @@ const compareMarketCapFrom2Dates = async (coin, date1, date2) => {
 const main = async () => {
   let data = await CoinGeckoClient.exchanges.fetchTickers(options.exchange)
 
-  let binanceCoin = data.data.tickers
-    .map((t) => ({
-      base: t.base,
-      coin_id: t.coin_id,
-    }))
-    .slice(0, 48) // 100 request / minute limit
+  let binanceCoin = data.data.tickers.map((t) => ({
+    base: t.base,
+    coin_id: t.coin_id,
+  }))
+  //.slice(0, 48) // 100 request / minute limit
 
   // remove duplicate binance coins
   const unique = binanceCoin
@@ -94,17 +98,16 @@ const main = async () => {
   Promise.all(binanceCoin).then((coins) => {
     coins = coins.map((c) => ({
       base: c.base,
-      evoBtc: c.evo.marketEvoInBtc,
-      evoUsd: c.evo.marketEvoInUsd,
+      evo: options.isEvoBtc ? c.evo.marketEvoInBtc : c.evo.marketEvoInUsd,
     }))
 
-    const evo = options.sortBy
+    const evo = options.isEvoBtc ? 'evoBtc' : 'evoUsd'
 
     coins = coins.sort((a, b) => {
-      if (a[evo] > b[evo]) {
-        return -1
-      } else if (a[evo] < b[evo]) {
-        return 1
+      if (a.evo > b.evo) {
+        return options.isWinner ? -1 : 1
+      } else if (a.evo < b.evo) {
+        return options.isWinner ? 1 : -1
       } else {
         return 0
       }
