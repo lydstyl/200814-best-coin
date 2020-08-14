@@ -93,9 +93,17 @@ const main = async () => {
     return newBinanceCoin
   })
 
-  // console.log('promises:', binanceCoin[0])
+  const coins = Promise.all(binanceCoin)
 
-  Promise.all(binanceCoin).then((coins) => {
+  return coins
+}
+
+const arr = async () => {
+  //3. Make calls
+  const coins = main()
+  console.log('arr -> coins', coins)
+
+  coins.then((coins) => {
     coins = coins.map((c) => ({
       base: c.base,
       evo: options.isEvoBtc ? c.evo.marketEvoInBtc : c.evo.marketEvoInUsd,
@@ -113,10 +121,8 @@ const main = async () => {
       }
     })
 
-    // console.log('coins', coins.slice(0, 20))
-    console.log('coins', coins)
+    return ['ab']
   })
 }
 
-//3. Make calls
-main()
+export default main
