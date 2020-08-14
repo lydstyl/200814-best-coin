@@ -1,6 +1,13 @@
 //1. Import coingecko-api
 const CoinGecko = require('coingecko-api')
 
+const options = {
+  exchange: 'binance',
+  date1: '10-08-2019',
+  date2: '10-08-2020',
+  sortBy: 'evoBtc', // or 'evoUsd'
+}
+
 //2. Initiate the CoinGecko API Client
 const CoinGeckoClient = new CoinGecko()
 
@@ -49,14 +56,14 @@ const compareMarketCapFrom2Dates = async (coin, date1, date2) => {
 }
 
 const main = async () => {
-  let data = await CoinGeckoClient.exchanges.fetchTickers('binance')
+  let data = await CoinGeckoClient.exchanges.fetchTickers(options.exchange)
 
   let binanceCoin = data.data.tickers
     .map((t) => ({
       base: t.base,
       coin_id: t.coin_id,
     }))
-    .slice(0, 100)
+    .slice(0, 48) // 100 request / minute limit
 
   // remove duplicate binance coins
   const unique = binanceCoin
@@ -75,8 +82,8 @@ const main = async () => {
 
     newBinanceCoin.evo = await compareMarketCapFrom2Dates(
       bc.coin_id,
-      '10-08-2019',
-      '10-08-2020'
+      options.date1,
+      options.date2
     )
 
     return newBinanceCoin
@@ -91,7 +98,7 @@ const main = async () => {
       evoUsd: c.evo.marketEvoInUsd,
     }))
 
-    const evo = 'evoBtc'
+    const evo = options.sortBy
 
     coins = coins.sort((a, b) => {
       if (a[evo] > b[evo]) {
@@ -103,7 +110,8 @@ const main = async () => {
       }
     })
 
-    console.log('coins', coins.slice(0, 20))
+    // console.log('coins', coins.slice(0, 20))
+    console.log('coins', coins)
   })
 }
 
