@@ -1,13 +1,25 @@
 //1. Import coingecko-api
-const CoinGecko = require('coingecko-api')
+const CoinGecko = require('coingecko-api') // https://www.coingecko.com/api/documentations/v3
+
+const getDateBeforeXDays = require('./getDateBeforeXDays')
 
 const options = {
   exchange: 'binance',
-  date1: '24-06-2019',
-  date2: '09-03-2020',
+  daysBefore: 9, // undefined to manualy write date1 and date2
+  date1: '03-08-2020',
+  date2: '17-08-2020',
   isEvoBtc: true, // or 'evoUsd' if false
   isWinner: true, // looser if false
 }
+
+if (options.daysBefore) {
+  const { now, before } = getDateBeforeXDays(options.daysBefore)
+
+  options.date1 = before
+  options.date2 = now
+}
+
+console.log(options)
 
 //2. Initiate the CoinGecko API Client
 const CoinGeckoClient = new CoinGecko()
@@ -79,6 +91,8 @@ const main = async () => {
       return bc
     }
   })
+
+  console.log('main -> binanceCoin', binanceCoin)
 
   // add evolution to each coin
   binanceCoin = binanceCoin.map(async (bc) => {

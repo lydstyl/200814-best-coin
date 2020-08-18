@@ -1,10 +1,16 @@
 dependencies:
   coingecko-api: 1.0.10
+  date-and-time: 0.14.0
 lockfileVersion: 5.1
 packages:
   /coingecko-api/1.0.10:
     dev: false
     resolution:
       integrity: sha512-7YLLC85+daxAw5QlBWoHVBVpJRwoPr4HtwanCr8V/WRjoyHTa1Lb9DQAvv4MDJZHiz4no6HGnDQnddtjV35oRA==
+  /date-and-time/0.14.0:
+    dev: false
+    resolution:
+      integrity: sha512-0wY8b90XjQkRxv3XGT8k1ffyDQOf4+T+2hiWp7rwYgoEn8OyYDsHZdnVrPlzxbwjLUY66mVBXr59eKOwpSV7lw==
 specifiers:
   coingecko-api: ^1.0.10
+  date-and-time: ^0.14.0
